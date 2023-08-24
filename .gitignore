@@ -1,0 +1,5 @@
+notes
+node_modules
+dist
+tsconfig.json
+package-lock.json

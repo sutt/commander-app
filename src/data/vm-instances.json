@@ -1,0 +1,14 @@
+[
+    {
+        "instanceId": 1,
+        "instanceName": "new-sd-1",
+        "instanceZone": "us-central1-a",
+        "instanceAddr": "34.172.214.221:7862"
+    },
+    {
+        "instanceId": 2,
+        "instanceName": "new-sd-2",
+        "instanceZone": "us-central1-b",
+        "instanceAddr": "104.197.35.36:7862"
+    }
+]
