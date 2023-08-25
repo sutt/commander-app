@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commander | Home</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        @media (max-width: 600px) {
+            table, th, td {
+                font-size: 0.8em;
+            }
+        }
+
+        .bucket-refresh-icon,
+        .availability-refresh-icon,
+        .refresh-icon {
+            cursor: pointer; /* Indicates clickable */
+            transition: transform 0.3s; /* Smooth transition for animations */
+            display: inline-block; /* Allows for rotation transform */
+        }
+
+        .refresh-icon:hover {
+            color: #007BFF; /* Change color on hover, you can choose any color */
+        }
+
+        .refreshing {
+            animation: spin 1s linear infinite; /* Spin animation */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h3>Commander App</h3>
+    <div id="instance-wrapper">
+        <h5>Instances</h5>
+        <table>
+            <thead>
+                <tr>
+                    <th>Instance ID</th>
+                    <th>Instance Name</th>
+                    <th>Instance Zone</th>
+                    <th>Instance Address</th>
+                    <th>VM Status</th>
+                    <th>App Availability</th>
+                    <th>Start</th>
+                    <th>Stop</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% instances.forEach(instance => { %>
+                    <tr data-instance-id="<%= instance.instanceId %>">
+                        <td><%= instance.instanceId %></td>
+                        <td><%= instance.instanceName %></td>
+                        <td><%= instance.instanceZone %></td>
+                        <td><%= instance.instanceAddr %></td>
+                        <td class="status">
+                            <span class="status-icon">?</span>
+                            <span class="refresh-icon" title="Refresh">🔄</span>
+                        </td>
+                        <td class="availability">
+                            <span class="availability-icon">?</span>
+                            <span class="availability-refresh-icon" title="Refresh">🔄</span>
+                        </td>
+                        <td><button class="start-btn">Start</button></td>
+                        <td><button class="stop-btn">Stop</button></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+    <div id="bucket-wrapper">
+        <h5>
+            Models in Bucket:
+            <span id="bucket-name-span"></span>
+            <span class="bucket-refresh-icon" title="Refresh">🔄</span>
+        </h5>
+        <div id="bucket-table-wrapper">
+            bucket contents...
+        </div>
+    </div>
+    <script>
+    
+    document.querySelectorAll("tr[data-instance-id]").forEach(row => {
+       
+        // Handle clicking on the entire row
+        row.addEventListener('click', function(event) {
+            if (event.target && event.target.classList.contains('refresh-icon')) {
+                // If the clicked element is the refresh icon, don't propagate the click event further
+                event.stopPropagation();
+                return;
+            }
+        });
+
+        // Handle clicking on the refresh icon specifically
+        const refreshIcon = row.querySelector('.refresh-icon');
+        if (refreshIcon) {
+            refreshIcon.addEventListener('click', function() {
+                fetchInstanceDetails(row);
+            });
+        }
+
+    });
+
+    function fetchInstanceDetails(row) {
+        const instanceId = row.getAttribute('data-instance-id');
+        const statusIcon = row.querySelector('.status-icon');
+        
+        statusIcon.textContent = '⏳';
+        
+        fetch(`/status/${instanceId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) { 
+                    statusIcon.textContent = data.status
+                } else {
+                    statusIcon.textContent = '❌';
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching instance details:", error);
+                statusIcon.textContent = '❗';
+            });
+    }
+
+    function fetchAppAvailable(event) {
+        const root = event.target.parentElement.parentElement;
+        const instanceId = root.getAttribute('data-instance-id')
+        const statusIcon = root.querySelector('.availability-icon');
+        
+        statusIcon.textContent = '⏳';
+        
+        fetch(`/available/${instanceId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.available) { 
+                    statusIcon.textContent = '✅';
+                } else {
+                    statusIcon.textContent = '❌';
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching app availability:", error);
+                statusIcon.textContent = '❗';
+            });
+    }
+
+    function actionCall(event, action) {
+        const instanceId = event.target.closest("tr[data-instance-id]").getAttribute('data-instance-id');
+        
+        event.stopPropagation();
+
+        fetch(`/run/${action}/${instanceId}`, {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            console.log(data);
+            
+        })
+        .catch(error => {
+            console.error("Error starting instance:", error);
+        });
+    }
+
+
+    function parseData(stdout) {
+        const lines = stdout.trim().split('\n');
+        const parsedData = [];
+        
+        for (let i = 0; i < lines.length - 1; i++) {
+            const [size, date, _path] = lines[i].split(/\s{2,}/).filter(Boolean);
+            const path = _path.substring(_path.lastIndexOf('/') + 1);
+            parsedData.push({ size, date, path });
+        }
+        return parsedData;
+    }
+
+    // Use the parsed data to build the table
+    function buildTable(data) {
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const tbody = document.createElement('tbody');
+
+        thead.innerHTML = `
+            <tr>
+                <th>Path</th>
+                <th>Size</th>
+                <th>Date</th>
+            </tr>
+        `;
+
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.path}</td>
+                <td>${item.size}</td>
+                <td>${item.date}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        
+        const wrapper = document.querySelector('#bucket-table-wrapper');
+        wrapper.textContent = '';
+        wrapper.appendChild(table);
+    }
+
+    function refreshBucket(bucketAddr) {
+        const wrapper = document.querySelector('#bucket-table-wrapper');
+        wrapper.innerHTML = '';
+        wrapper.textContent = '⏳';
+        document.querySelector('#bucket-name-span').textContent = bucketAddr;
+        bucketAddrEncoded = encodeURIComponent(bucketAddr);
+        fetch(`/bucket/${bucketAddrEncoded}`)
+            .then(response => response.json())
+            .then(data => {
+                const parsedData = parseData(data.stdout);
+                buildTable(parsedData);
+            })
+            .catch(error => {
+                console.error("Error fetching bucket data:", error);
+            });
+    }
+
+    
+    
+    document.addEventListener('DOMContentLoaded', (event) => {
+        
+        document.querySelectorAll("tr[data-instance-id]").forEach(row => {
+            fetchInstanceDetails(row);
+        });
+        
+        document.querySelectorAll(".availability-refresh-icon").forEach(button => {
+            button.addEventListener('click', (event) => {
+                fetchAppAvailable(event);
+            });
+        });
+
+        document.querySelector(".bucket-refresh-icon")
+            .addEventListener('click', (event) => {
+                refreshBucket('sd-models-bucket-1/models-1');
+            });
+        
+        
+        document.querySelectorAll(".start-btn").forEach(button => {
+            button.addEventListener('click', (event) => {
+                actionCall(event, 'start');
+            });
+        });
+        
+        document.querySelectorAll(".stop-btn").forEach(button => {
+            button.addEventListener('click', (event) => {
+                actionCall(event, 'stop');
+            });
+        });
+        
+        refreshBucket('sd-models-bucket-1/models-1');
+    });
+
+    </script>
+</body>
+</html>
