@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commander-Demo Login</title>
+</head>
+<body>
+    <h3>Protected Data</h3>
+    <p>Control center!</p>
+    <button onclick="logOut()">Log Out</button>
+    <button onclick="testAjax()">Test Ajax</button>
+
+    
+    <script>
+        
+        function deleteCookie(name) {
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;';
+        }
+
+        function logOut() {
+            deleteCookie('commander_token');
+            window.location.href = '/';
+            console.log('Logged out')
+        }
+
+        function testAjax() {
+            fetch('/data-protected')
+                .then(response => response.json())
+                .then(data => console.log(data))
+        }
+
+    </script>
+</body>
+</html>

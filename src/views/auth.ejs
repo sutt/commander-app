@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commander-Demo Login</title>
+</head>
+<body>
+    <h3>Auth Demo</h3>
+    <!-- <form onsubmit="submitLogin(event)"> -->
+    <form 
+        action="login"
+        method="POST"
+        >
+        <input type="text" name="username" placeholder="username">
+        <input type="password" name="password" placeholder="password">
+        <button type="submit">Login</button>
+    </form>
+    <script>
+        async function submitLogin(event) {
+            event.preventDefault();  // Prevent the default form submission
+            console.log("submitLogin");
+            // Gather form data
+            const formData = new FormData(event.target);
+            const username = formData.get('username');
+            const password = formData.get('password');
+    
+            try {
+                const response = await fetch('login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+    
+                if (response.status === 200) {
+                    const data = await response.json();
+                    // Store the token for further use, e.g., in localStorage or sessionStorage
+                    localStorage.setItem('token', data.token);
+                    // alert();
+                    console.log(`Logged in with token ${data.token}`)
+                } else if (response.status === 401) {
+                    const data = await response.json();
+                    alert(data.error);
+                } else {
+                    alert('An error occurred. Please try again.');
+                }
+            } catch (error) {
+                console.error('There was an error logging in:', error);
+                alert('An error occurred. Please check the console for more details.');
+            }
+        }
+    </script>
+    
+</body>
+</html>
