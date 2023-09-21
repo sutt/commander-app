@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "flatstart": "ts-node src/index.ts",
     "unixstart": "nodemon --watch 'src/**/*.ts' --exec 'npx ts-node' src/index.ts",
-    "start": "nodemon --watch \"src\\**\\*.ts\" --exec \"ts-node\" src\\index.ts",
-    "build": "tsc",
+    "start": "nodemon --watch \"src\\**\\*.ts\" --exec \"ts-node\" src\\auth.ts",
+    "build": "tsc && cp -r src/views dist ",
+    "_build": "tsc",
+    "_unixbuild": "tsc && npx copyfiles -u 2 'src/views/**/*' dist/views/ ",
+    "_winbuild": "tsc && npx copyfiles \"src\\views\\**\\*\" \"dist\\views\\\" ",
     "serve": "node dist/index.js"
   },
   "keywords": [],
@@ -21,7 +23,9 @@
     "body-parser": "^1.20.2",
     "child_process": "^1.0.2",
     "cookie-parser": "^1.4.6",
+    "copyfiles": "^2.4.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.1"

@@ -4,10 +4,16 @@ import bodyParser, { json } from 'body-parser';
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
 import path from 'path';
+import dotenv from 'dotenv';
 const cookieParser = require('cookie-parser');
 
-const SECRET_KEY: string = 'yourSuperSecretKey'; // This should be kept secret and possibly in environment variables
-const users: { [key: string]: string } = {}; // In-memory store for users. This can be a file or other persistent storage in a real application.
+dotenv.config();
+const SECRET_KEY: string    = process.env.COMMANDER_SECRET_KEY as string;
+const USERNAME: string      = process.env.COMMANDER_USERNAME as string;
+const PASSWORD: string      = process.env.COMMANDER_PASSWORD as string;
+const PORT: number          = parseInt(process.env.COMMANDER_PORT as string || '3009');
+
+const users: { [key: string]: string } = {[USERNAME]: bcrypt.hashSync(PASSWORD, 10)}; 
 
 const app = express();
 
@@ -60,6 +66,7 @@ app.post('/login', (req: Request, res: Response) => {
     const { username, password } = req.body;
     
     const hashedPassword = users[username];
+
     if (!hashedPassword) {
         return res.status(401).json({ error: 'Invalid username' });
     }
@@ -98,10 +105,6 @@ app.get('/data-protected', async (req: Request, res: Response) => {
 });
 
 
-const _username = 'username'
-const _password = 'password'
-users[_username] = bcrypt.hashSync(_password, 10);
-
-app.listen(3009, () => {
-    console.log('Server started on http://localhost:3009');
+app.listen(PORT, () => {
+    console.log('Server started on http://localhost:' + PORT);
 });

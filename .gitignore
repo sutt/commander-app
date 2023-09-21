@@ -4,3 +4,4 @@ dist
 tsconfig.json
 package-lock.json
 .vscode
+.env
