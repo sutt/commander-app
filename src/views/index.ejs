@@ -45,6 +45,7 @@
 </head>
 <body>
     <h3>Commander App</h3>
+    <button onclick="logOut()">Log Out</button>
     <div id="instance-wrapper">
         <h5>Instances</h5>
         <table>
@@ -283,6 +284,16 @@
         
         refreshBucket('sd-models-bucket-1/models-1');
     });
+
+    function deleteCookie(name) {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;';
+    }
+
+    function logOut() {
+        deleteCookie('commander_token');
+        window.location.href = '/';
+        console.log('Logged out')
+    }
 
     </script>
 </body>

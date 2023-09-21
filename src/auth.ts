@@ -1,28 +1,17 @@
-import express, { Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import jwt from 'jsonwebtoken';
-import bodyParser, { json } from 'body-parser';
 import bcrypt from 'bcryptjs';
-import cors from 'cors';
-import path from 'path';
 import dotenv from 'dotenv';
-const cookieParser = require('cookie-parser');
+import vms from './data/vm-instances.json';
 
 dotenv.config();
 const SECRET_KEY: string    = process.env.COMMANDER_SECRET_KEY as string;
 const USERNAME: string      = process.env.COMMANDER_USERNAME as string;
 const PASSWORD: string      = process.env.COMMANDER_PASSWORD as string;
-const PORT: number          = parseInt(process.env.COMMANDER_PORT as string || '3009');
 
 const users: { [key: string]: string } = {[USERNAME]: bcrypt.hashSync(PASSWORD, 10)}; 
 
-const app = express();
-
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }))
-
+const router = Router();
 
 async function authenticate(req: Request): Promise<boolean> {
     const token: string | undefined = req.cookies['commander_token'] as string;
@@ -46,22 +35,22 @@ async function authenticate(req: Request): Promise<boolean> {
 }
 
 
-app.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
     const loggedIn = await authenticate(req)
     if (loggedIn) {
-        return res.render('protect')
+        return res.render('index', { instances: vms });
     } else {
         return res.redirect('/login-form');
     }
 });
 
 
-app.get('/login-form', (req: Request, res: Response) => {
+router.get('/login-form', (req: Request, res: Response) => {
     res.render('auth');
 });
 
 
-app.post('/login', (req: Request, res: Response) => {
+router.post('/login', (req: Request, res: Response) => {
     
     const { username, password } = req.body;
     
@@ -85,7 +74,7 @@ app.post('/login', (req: Request, res: Response) => {
 });
 
 
-app.get('/protected', async (req: Request, res: Response) => {
+router.get('/protected', async (req: Request, res: Response) => {
     const loggedIn = await authenticate(req)
     if (loggedIn) {
         return res.render('protect')
@@ -95,7 +84,7 @@ app.get('/protected', async (req: Request, res: Response) => {
 });
 
 
-app.get('/data-protected', async (req: Request, res: Response) => {
+router.get('/data-protected', async (req: Request, res: Response) => {
     const loggedIn = await authenticate(req)
     if (loggedIn) {
         return res.json({ data: 'This is protected data' });
@@ -105,6 +94,4 @@ app.get('/data-protected', async (req: Request, res: Response) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log('Server started on http://localhost:' + PORT);
-});
+export default router;

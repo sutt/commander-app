@@ -1,4 +1,4 @@
-import express from 'express';
+import { Request, Response, Router } from 'express';
 import path from 'path';
 import axios, { AxiosResponse } from 'axios';
 import { callCommand, listBucket, parseStatus } from './utils';
@@ -6,12 +6,10 @@ import vms from './data/vm-instances.json';
 
 const port = 3000;
 
-const app = express();
+const router = Router();
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
-app.get('/run/:action/:instanceid', async (req, res) => {
+router.get('/run/:action/:instanceid', async (req, res) => {
     
     const action = req.params.action;
     const instanceID = parseInt(req.params.instanceid);
@@ -37,7 +35,7 @@ app.get('/run/:action/:instanceid', async (req, res) => {
 
 });
 
-app.get('/bucket/:bucketpath', async (req, res) => {
+router.get('/bucket/:bucketpath', async (req, res) => {
     
     const _bucketPath = req.params.bucketpath;
 
@@ -48,7 +46,7 @@ app.get('/bucket/:bucketpath', async (req, res) => {
     res.json(data);
 });
 
-app.get('/available/:instanceid', async (req, res) => {
+router.get('/available/:instanceid', async (req, res) => {
 
     const instanceID = parseInt(req.params.instanceid);
 
@@ -72,7 +70,7 @@ app.get('/available/:instanceid', async (req, res) => {
     }
 });
 
-app.get('/status/:instanceid', async (req, res) => {
+router.get('/status/:instanceid', async (req, res) => {
 
     const instanceID = parseInt(req.params.instanceid);
 
@@ -91,10 +89,5 @@ app.get('/status/:instanceid', async (req, res) => {
     res.json({success, status});
 });
 
-app.get('/', (req, res) => {
-    res.render('index', { instances: vms });
-});
 
-app.listen(port, () => {
-    return console.log(`server is listening on ${port}`);
-});
+export default router;
