@@ -10,5 +10,11 @@
         "instanceName": "new-sd-2",
         "instanceZone": "us-central1-b",
         "instanceAddr": "104.197.35.36:7862"
+    },
+    {
+        "instanceId": 3,
+        "instanceName": "local-alice",
+        "instanceZone": "placeholder",
+        "instanceAddr": "127.0.0.1:8090"
     }
 ]

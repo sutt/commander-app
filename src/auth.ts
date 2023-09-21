@@ -4,7 +4,6 @@ import bodyParser, { json } from 'body-parser';
 import bcrypt from 'bcryptjs';
 import cors from 'cors';
 import path from 'path';
-// import * as cookieParser from 'cookie-parser';
 const cookieParser = require('cookie-parser');
 
 const SECRET_KEY: string = 'yourSuperSecretKey'; // This should be kept secret and possibly in environment variables

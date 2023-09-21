@@ -26,6 +26,7 @@
             cursor: pointer; /* Indicates clickable */
             transition: transform 0.3s; /* Smooth transition for animations */
             display: inline-block; /* Allows for rotation transform */
+            
         }
 
         .refresh-icon:hover {
@@ -68,11 +69,11 @@
                         <td><%= instance.instanceAddr %></td>
                         <td class="status">
                             <span class="status-icon">?</span>
-                            <span class="refresh-icon" title="Refresh">🔄</span>
+                            <span class="refresh-icon icon-refresh" title="Refresh">🔄</span>
                         </td>
                         <td class="availability">
                             <span class="availability-icon">?</span>
-                            <span class="availability-refresh-icon" title="Refresh">🔄</span>
+                            <span class="availability-refresh-icon icon-refresh" title="Refresh">🔄</span>
                         </td>
                         <td><button class="start-btn">Start</button></td>
                         <td><button class="stop-btn">Stop</button></td>
@@ -85,7 +86,7 @@
         <h5>
             Models in Bucket:
             <span id="bucket-name-span"></span>
-            <span class="bucket-refresh-icon" title="Refresh">🔄</span>
+            <span class="bucket-refresh-icon" title="Refresh icon-refresh">🔄</span>
         </h5>
         <div id="bucket-table-wrapper">
             bucket contents...
@@ -242,6 +243,16 @@
     
     document.addEventListener('DOMContentLoaded', (event) => {
         
+        document.querySelectorAll('.icon-refresh').forEach(item => {
+            item.setAttribute('tabindex', '0');
+            item.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.key === ' ' || event.key === 'Space') {
+                    event.preventDefault();
+                    item.click();
+                }   
+            });
+        });
+
         document.querySelectorAll("tr[data-instance-id]").forEach(row => {
             fetchInstanceDetails(row);
         });

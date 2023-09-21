@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import axios, { AxiosResponse } from 'axios';
 import { callCommand, listBucket, parseStatus } from './utils';
 import vms from './data/vm-instances.json';
 
@@ -51,12 +52,24 @@ app.get('/available/:instanceid', async (req, res) => {
 
     const instanceID = parseInt(req.params.instanceid);
 
-    const data = {
-        available: true,
-        messgae: 'not implemented'
+    const instance = vms.find((vm: any) => vm.instanceId == instanceID);    
+    if (!instance) {
+        res.status(401).send('instance not found');
+        return;
     }
-
-    res.json(data);
+    
+    const endpoint = `http://${instance.instanceAddr}/inquiries/available`;
+    
+    try {
+        const response: AxiosResponse = await axios.get(endpoint, { timeout: 5000 });
+        res.json({
+            available: response.data.available,
+            messgae: 'successful availablity check'
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('server error fetching availablity');
+    }
 });
 
 app.get('/status/:instanceid', async (req, res) => {
