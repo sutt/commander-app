@@ -13,7 +13,7 @@ const users: { [key: string]: string } = {[USERNAME]: bcrypt.hashSync(PASSWORD, 
 
 const router = Router();
 
-async function authenticate(req: Request): Promise<boolean> {
+export async function authenticate(req: Request): Promise<boolean> {
     const token: string | undefined = req.cookies['commander_token'] as string;
     
     if (!token) {
@@ -70,26 +70,6 @@ router.post('/login', (req: Request, res: Response) => {
         res.redirect('/');
     } else {
         res.status(401).json({ error: 'Invalid password' });
-    }
-});
-
-
-router.get('/protected', async (req: Request, res: Response) => {
-    const loggedIn = await authenticate(req)
-    if (loggedIn) {
-        return res.render('protect')
-    } else {
-        return res.status(403).send('Not logged in');
-    }
-});
-
-
-router.get('/data-protected', async (req: Request, res: Response) => {
-    const loggedIn = await authenticate(req)
-    if (loggedIn) {
-        return res.json({ data: 'This is protected data' });
-    } else {
-        return res.status(403).json({});
     }
 });
 

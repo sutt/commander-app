@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import path from 'path';
 import axios, { AxiosResponse } from 'axios';
 import { callCommand, listBucket, parseStatus } from './utils';
+import { authenticate } from './auth';
 import vms from './data/vm-instances.json';
 
 const port = 3000;
@@ -10,6 +11,11 @@ const router = Router();
 
 
 router.get('/run/:action/:instanceid', async (req, res) => {
+
+    const loggedIn = await authenticate(req)
+    if (!loggedIn) {
+        return res.status(403).json({error: 'not logged in'});
+    }
     
     const action = req.params.action;
     const instanceID = parseInt(req.params.instanceid);
@@ -36,7 +42,12 @@ router.get('/run/:action/:instanceid', async (req, res) => {
 });
 
 router.get('/bucket/:bucketpath', async (req, res) => {
-    
+
+    const loggedIn = await authenticate(req)
+    if (!loggedIn) {
+        return res.status(403).json({error: 'not logged in'});
+    }
+
     const _bucketPath = req.params.bucketpath;
 
     const bucketPath = `gs://${decodeURI(_bucketPath)}`;
@@ -47,6 +58,11 @@ router.get('/bucket/:bucketpath', async (req, res) => {
 });
 
 router.get('/available/:instanceid', async (req, res) => {
+
+    const loggedIn = await authenticate(req)
+    if (!loggedIn) {
+        return res.status(403).json({error: 'not logged in'});
+    }
 
     const instanceID = parseInt(req.params.instanceid);
 
@@ -71,6 +87,11 @@ router.get('/available/:instanceid', async (req, res) => {
 });
 
 router.get('/status/:instanceid', async (req, res) => {
+
+    const loggedIn = await authenticate(req)
+    if (!loggedIn) {
+        return res.status(403).json({error: 'not logged in'});
+    }
 
     const instanceID = parseInt(req.params.instanceid);
 
